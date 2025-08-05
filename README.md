@@ -2,10 +2,6 @@
 
 HTMLとJavaScriptで作られたレトロゲーム集です。ブラウザで手軽に楽しめるミニゲームを複数収録しています。
 
-## 🚀 デモ
-
-GitHub Pagesで公開中: [ミニゲーム集](https://kazukiyoneda.github.io/mini-games/)
-
 ## 🎯 収録ゲーム
 
 ### 1. シューティングゲーム
