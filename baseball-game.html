@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>古典的野球ゲーム</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 50%, #228B22 100%);
+            font-family: 'Arial', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #gameContainer {
+            background: #2F4F2F;
+            border: 4px solid #8B4513;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        #field {
+            width: 600px;
+            height: 400px;
+            position: relative;
+            background: linear-gradient(135deg, #228B22 0%, #32CD32 100%);
+            border: 2px solid #8B4513;
+            overflow: hidden;
+        }
+
+        #pitchersMound {
+            position: absolute;
+            bottom: 120px;
+            left: 285px;
+            width: 30px;
+            height: 15px;
+            background: #CD853F;
+            border-radius: 50%;
+            border: 2px solid #8B4513;
+        }
+
+        #homeplate {
+            position: absolute;
+            bottom: 40px;
+            left: 290px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 2px solid #000;
+            transform: rotate(45deg);
+        }
+
+        #batter {
+            position: absolute;
+            bottom: 35px;
+            left: 320px;
+            width: 25px;
+            height: 40px;
+            background: #4169E1;
+            border-radius: 5px;
+            transition: transform 0.2s;
+        }
+
+        #pitcher {
+            position: absolute;
+            bottom: 120px;
+            left: 285px;
+            width: 25px;
+            height: 40px;
+            background: #DC143C;
+            border-radius: 5px;
+            transition: transform 0.2s;
+        }
+
+        #ball {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: white;
+            border: 1px solid #000;
+            border-radius: 50%;
+            display: none;
+            z-index: 10;
+        }
+
+        #strikeZone {
+            position: absolute;
+            bottom: 45px;
+            left: 275px;
+            width: 50px;
+            height: 60px;
+            border: 2px dashed rgba(255,255,255,0.5);
+            display: none;
+        }
+
+        #scoreboard {
+            background: #000;
+            color: #00FF00;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            border: 2px solid #333;
+        }
+
+        #controls {
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .button:hover {
+            background: #45a049;
+        }
+
+        .button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        #gameMessage {
+            background: rgba(255,255,255,0.9);
+            color: #000;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-weight: bold;
+            min-height: 30px;
+        }
+
+        .pitch-buttons {
+            display: none;
+        }
+
+        .pitch-buttons.active {
+            display: block;
+        }
+
+        .bat-buttons {
+            display: none;
+        }
+
+        .bat-buttons.active {
+            display: block;
+        }
+
+        #pitchTarget {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid red;
+            border-radius: 50%;
+            background: rgba(255,0,0,0.3);
+            display: none;
+            z-index: 5;
+        }
+
+        .score-display {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 10px;
+        }
+
+        .team-score {
+            text-align: center;
+        }
+
+        .count-display {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            font-size: 18px;
+        }
+
+        .hit-result {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,0,0.9);
+            color: black;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            display: none;
+            z-index: 20;
+        }
+    </style>
+</head>
+<body>
+    <div id="scoreboard">
+        <div class="score-display">
+            <div class="team-score">
+                <div>ホーム</div>
+                <div id="homeScore">0</div>
+            </div>
+            <div class="team-score">
+                <div>イニング</div>
+                <div><span id="inning">1</span><span id="topBottom">表</span></div>
+            </div>
+            <div class="team-score">
+                <div>ビジター</div>
+                <div id="awayScore">0</div>
+            </div>
+        </div>
+        <div class="count-display">
+            <div>ボール: <span id="balls">0</span></div>
+            <div>ストライク: <span id="strikes">0</span></div>
+            <div>アウト: <span id="outs">0</span></div>
+        </div>
+    </div>
+
+    <div id="gameContainer">
+        <div id="field">
+            <div id="pitchersMound"></div>
+            <div id="homeplate"></div>
+            <div id="pitcher"></div>
+            <div id="batter"></div>
+            <div id="ball"></div>
+            <div id="strikeZone"></div>
+            <div id="pitchTarget"></div>
+            <div id="hitResult" class="hit-result"></div>
+        </div>
+    </div>
+
+    <div id="controls">
+        <div id="gameMessage">ゲームスタート！ピッチャー、投球してください。</div>
+        
+        <div class="pitch-buttons active">
+            <h3>ピッチング</h3>
+            <button class="button" onclick="selectPitch('fastball')">ストレート</button>
+            <button class="button" onclick="selectPitch('curveball')">カーブ</button>
+            <button class="button" onclick="selectPitch('slider')">スライダー</button>
+            <div style="margin-top: 10px;">
+                <small>フィールドをクリックしてコースを選択してから投球</small>
+            </div>
+        </div>
+
+        <div class="bat-buttons">
+            <h3>バッティング</h3>
+            <button class="button" id="swingButton" onclick="swing()" disabled>スイング！</button>
+            <button class="button" onclick="takeCall()">見送り</button>
+        </div>
+
+        <button class="button" onclick="startNewGame()" style="margin-top: 20px;">新しいゲーム</button>
+    </div>
+
+    <script>
+        let gameState = {
+            inning: 1,
+            topBottom: 'top', // top or bottom
+            homeScore: 0,
+            awayScore: 0,
+            balls: 0,
+            strikes: 0,
+            outs: 0,
+            currentPhase: 'pitching', // pitching or batting
+            selectedPitch: null,
+            targetX: 0,
+            targetY: 0,
+            ballInMotion: false
+        };
+
+        const field = document.getElementById('field');
+        const ball = document.getElementById('ball');
+        const pitcher = document.getElementById('pitcher');
+        const batter = document.getElementById('batter');
+        const pitchTarget = document.getElementById('pitchTarget');
+        const strikeZone = document.getElementById('strikeZone');
+        const hitResult = document.getElementById('hitResult');
+
+        field.addEventListener('click', handleFieldClick);
+
+        function updateUI() {
+            document.getElementById('homeScore').textContent = gameState.homeScore;
+            document.getElementById('awayScore').textContent = gameState.awayScore;
+            document.getElementById('inning').textContent = gameState.inning;
+            document.getElementById('topBottom').textContent = gameState.topBottom === 'top' ? '表' : '裏';
+            document.getElementById('balls').textContent = gameState.balls;
+            document.getElementById('strikes').textContent = gameState.strikes;
+            document.getElementById('outs').textContent = gameState.outs;
+
+            const pitchButtons = document.querySelector('.pitch-buttons');
+            const batButtons = document.querySelector('.bat-buttons');
+            
+            if (gameState.currentPhase === 'pitching') {
+                pitchButtons.classList.add('active');
+                batButtons.classList.remove('active');
+            } else {
+                pitchButtons.classList.remove('active');
+                batButtons.classList.add('active');
+            }
+        }
+
+        function handleFieldClick(e) {
+            if (gameState.currentPhase !== 'pitching' || !gameState.selectedPitch || gameState.ballInMotion) return;
+
+            const rect = field.getBoundingClientRect();
+            gameState.targetX = e.clientX - rect.left;
+            gameState.targetY = e.clientY - rect.top;
+
+            pitchTarget.style.left = (gameState.targetX - 10) + 'px';
+            pitchTarget.style.top = (gameState.targetY - 10) + 'px';
+            pitchTarget.style.display = 'block';
+
+            setTimeout(() => {
+                pitchTarget.style.display = 'none';
+                throwBall();
+            }, 500);
+        }
+
+        function selectPitch(pitchType) {
+            if (gameState.ballInMotion) return;
+            gameState.selectedPitch = pitchType;
+            document.getElementById('gameMessage').textContent = 
+                `${getPitchName(pitchType)}を選択。フィールドをクリックして投球！`;
+        }
+
+        function getPitchName(pitchType) {
+            const names = {
+                'fastball': 'ストレート',
+                'curveball': 'カーブボール',
+                'slider': 'スライダー'
+            };
+            return names[pitchType] || pitchType;
+        }
+
+        function throwBall() {
+            if (!gameState.selectedPitch) return;
+
+            gameState.ballInMotion = true;
+            gameState.currentPhase = 'batting';
+            
+            // ピッチャーアニメーション
+            pitcher.style.transform = 'scaleX(-1)';
+            setTimeout(() => {
+                pitcher.style.transform = 'scaleX(1)';
+            }, 300);
+
+            // ボール表示と移動
+            ball.style.display = 'block';
+            ball.style.left = '295px';
+            ball.style.top = '140px';
+
+            // 球種による軌道の違い
+            let trajectory = calculateTrajectory(gameState.selectedPitch);
+            
+            animateBall(trajectory);
+            
+            // バッティングフェーズに移行
+            setTimeout(() => {
+                document.getElementById('swingButton').disabled = false;
+                document.getElementById('gameMessage').textContent = 'スイングまたは見送りを選択！';
+            }, 500);
+
+            // タイムアウト（自動見送り）
+            setTimeout(() => {
+                if (gameState.currentPhase === 'batting') {
+                    takeCall();
+                }
+            }, 2000);
+        }
+
+        function calculateTrajectory(pitchType) {
+            let endX = gameState.targetX;
+            let endY = gameState.targetY;
+            
+            // 球種による軌道修正
+            switch(pitchType) {
+                case 'curveball':
+                    endX += (Math.random() - 0.5) * 40;
+                    endY += Math.random() * 30;
+                    break;
+                case 'slider':
+                    endX += (Math.random() - 0.5) * 30;
+                    break;
+                default: // fastball
+                    endX += (Math.random() - 0.5) * 20;
+                    break;
+            }
+
+            return { endX, endY };
+        }
+
+        function animateBall(trajectory) {
+            const startX = 295;
+            const startY = 140;
+            const duration = 1000;
+            const startTime = Date.now();
+
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                const currentX = startX + (trajectory.endX - startX) * progress;
+                const currentY = startY + (trajectory.endY - startY) * progress;
+
+                ball.style.left = currentX + 'px';
+                ball.style.top = currentY + 'px';
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    setTimeout(() => {
+                        ball.style.display = 'none';
+                    }, 500);
+                }
+            }
+
+            animate();
+        }
+
+        function swing() {
+            if (gameState.currentPhase !== 'batting') return;
+
+            document.getElementById('swingButton').disabled = true;
+            
+            // バッターアニメーション
+            batter.style.transform = 'rotate(45deg)';
+            setTimeout(() => {
+                batter.style.transform = 'rotate(0deg)';
+            }, 200);
+
+            // 打撃判定
+            const result = calculateHitResult();
+            resolveAtBat(result);
+        }
+
+        function takeCall() {
+            if (gameState.currentPhase !== 'batting') return;
+
+            const result = calculateCallResult();
+            resolveAtBat(result);
+        }
+
+        function calculateHitResult() {
+            const ballX = parseFloat(ball.style.left);
+            const ballY = parseFloat(ball.style.top);
+            
+            // ストライクゾーン判定
+            const isInStrikeZone = (ballX >= 275 && ballX <= 325 && ballY >= 280 && ballY <= 340);
+            
+            // スイング成功率（ストライクゾーン内なら高確率）
+            const swingSuccess = isInStrikeZone ? Math.random() < 0.7 : Math.random() < 0.3;
+            
+            if (swingSuccess) {
+                const hitType = Math.random();
+                if (hitType < 0.1) return 'home_run';
+                if (hitType < 0.3) return 'hit';
+                if (hitType < 0.5) return 'foul';
+                return 'ground_out';
+            } else {
+                return isInStrikeZone ? 'strike_swinging' : 'ball';
+            }
+        }
+
+        function calculateCallResult() {
+            const ballX = parseFloat(ball.style.left);
+            const ballY = parseFloat(ball.style.top);
+            
+            // ストライクゾーン判定
+            const isInStrikeZone = (ballX >= 275 && ballX <= 325 && ballY >= 280 && ballY <= 340);
+            
+            return isInStrikeZone ? 'strike_looking' : 'ball';
+        }
+
+        function resolveAtBat(result) {
+            gameState.ballInMotion = false;
+            gameState.currentPhase = 'pitching';
+            gameState.selectedPitch = null;
+
+            let message = '';
+            let nextBatter = false;
+
+            switch(result) {
+                case 'ball':
+                    gameState.balls++;
+                    message = 'ボール！';
+                    if (gameState.balls >= 4) {
+                        message += ' フォアボール！';
+                        nextBatter = true;
+                    }
+                    break;
+                    
+                case 'strike_looking':
+                    gameState.strikes++;
+                    message = 'ストライク（見逃し）！';
+                    if (gameState.strikes >= 3) {
+                        message += ' 三振！';
+                        gameState.outs++;
+                        nextBatter = true;
+                    }
+                    break;
+                    
+                case 'strike_swinging':
+                    gameState.strikes++;
+                    message = 'ストライク（空振り）！';
+                    if (gameState.strikes >= 3) {
+                        message += ' 三振！';
+                        gameState.outs++;
+                        nextBatter = true;
+                    }
+                    break;
+                    
+                case 'foul':
+                    if (gameState.strikes < 2) gameState.strikes++;
+                    message = 'ファウル！';
+                    break;
+                    
+                case 'ground_out':
+                    message = 'ゴロアウト！';
+                    gameState.outs++;
+                    nextBatter = true;
+                    break;
+                    
+                case 'hit':
+                    message = 'ヒット！';
+                    addScore();
+                    nextBatter = true;
+                    break;
+                    
+                case 'home_run':
+                    message = 'ホームラン！！';
+                    addScore();
+                    showHitResult('ホームラン！');
+                    nextBatter = true;
+                    break;
+            }
+
+            document.getElementById('gameMessage').textContent = message;
+
+            if (nextBatter) {
+                setTimeout(() => {
+                    nextAtBat();
+                }, 2000);
+            }
+
+            updateUI();
+        }
+
+        function addScore() {
+            if (gameState.topBottom === 'top') {
+                gameState.awayScore++;
+            } else {
+                gameState.homeScore++;
+            }
+        }
+
+        function showHitResult(text) {
+            hitResult.textContent = text;
+            hitResult.style.display = 'block';
+            setTimeout(() => {
+                hitResult.style.display = 'none';
+            }, 2000);
+        }
+
+        function nextAtBat() {
+            gameState.balls = 0;
+            gameState.strikes = 0;
+
+            if (gameState.outs >= 3) {
+                nextInning();
+            } else {
+                document.getElementById('gameMessage').textContent = '次のバッター！';
+            }
+
+            updateUI();
+        }
+
+        function nextInning() {
+            gameState.outs = 0;
+            
+            if (gameState.topBottom === 'top') {
+                gameState.topBottom = 'bottom';
+                document.getElementById('gameMessage').textContent = `${gameState.inning}回裏開始！`;
+            } else {
+                gameState.inning++;
+                gameState.topBottom = 'top';
+                
+                if (gameState.inning > 9 || (gameState.inning >= 9 && gameState.homeScore !== gameState.awayScore)) {
+                    endGame();
+                    return;
+                }
+                
+                document.getElementById('gameMessage').textContent = `${gameState.inning}回表開始！`;
+            }
+        }
+
+        function endGame() {
+            let winner = '';
+            if (gameState.homeScore > gameState.awayScore) {
+                winner = 'ホームチームの勝利！';
+            } else if (gameState.awayScore > gameState.homeScore) {
+                winner = 'ビジターチームの勝利！';
+            } else {
+                winner = '引き分け！';
+            }
+            
+            document.getElementById('gameMessage').textContent = `ゲーム終了！ ${winner}`;
+        }
+
+        function startNewGame() {
+            gameState = {
+                inning: 1,
+                topBottom: 'top',
+                homeScore: 0,
+                awayScore: 0,
+                balls: 0,
+                strikes: 0,
+                outs: 0,
+                currentPhase: 'pitching',
+                selectedPitch: null,
+                targetX: 0,
+                targetY: 0,
+                ballInMotion: false
+            };
+            
+            ball.style.display = 'none';
+            document.getElementById('swingButton').disabled = true;
+            document.getElementById('gameMessage').textContent = 'ゲームスタート！ピッチャー、投球してください。';
+            
+            updateUI();
+        }
+
+        // ゲーム開始
+        updateUI();
+    </script>
+</body>
+</html>

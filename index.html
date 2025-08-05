@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ミニゲーム集 - ダッシュボード</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .games-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .games-section h2 {
+            font-size: 2rem;
+            margin-bottom: 25px;
+            color: #4a5568;
+            text-align: center;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .game-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 12px;
+            padding: 25px;
+            text-decoration: none;
+            color: white;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+
+        .game-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .game-card p {
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .game-card .game-status {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .shooting-game {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .baseball-game {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .news-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            height: fit-content;
+        }
+
+        .news-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #4a5568;
+            text-align: center;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        .news-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .news-item:last-child {
+            border-bottom: none;
+        }
+
+        .news-date {
+            font-size: 0.85rem;
+            color: #718096;
+            margin-bottom: 5px;
+        }
+
+        .news-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .news-content {
+            font-size: 0.9rem;
+            color: #4a5568;
+            line-height: 1.4;
+        }
+
+        .update-badge {
+            background: #48bb78;
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 10px;
+        }
+
+        .announcement-badge {
+            background: #ed8936;
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 10px;
+        }
+
+        .stats-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .stats-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #4a5568;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .stat-item {
+            padding: 20px;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 10px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            opacity: 0.8;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 ミニゲーム集</h1>
+            <p>レトロゲームをたくさん用意する予定です。</p>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="games-section">
+                <h2>🎯 ゲームメニュー</h2>
+                <div class="games-grid">
+                    <a href="shooting-game.html" class="game-card shooting-game">
+                        <h3>🚀 シューティングゲーム</h3>
+                        <p>宇宙空間で敵を撃ち落とせ！矢印キーで移動、スペースキーで発射。スコアを競おう！</p>
+                        <span class="game-status">✅ プレイ可能</span>
+                    </a>
+
+                    <a href="baseball-game.html" class="game-card baseball-game">
+                        <h3>⚾ 野球ゲーム</h3>
+                        <p>古典的な野球ゲーム。ピッチングとバッティングを楽しもう！9回まで本格対戦。</p>
+                        <span class="game-status">🚧 作成中</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="news-section">
+                <h2>📢 更新履歴・お知らせ</h2>
+                
+                <div class="news-item">
+                    <div class="news-date">2025-08-05</div>
+                    <div class="news-title">
+                        野球ゲーム追加！
+                        <span class="update-badge">NEW</span>
+                    </div>
+                    <div class="news-content">
+                        古典的な野球ゲームが追加されました。ピッチングとバッティングを楽しめます。
+                    </div>
+                </div>
+
+                <div class="news-item">
+                    <div class="news-date">2025-08-05</div>
+                    <div class="news-title">
+                        シューティングゲーム公開
+                        <span class="update-badge">NEW</span>
+                    </div>
+                    <div class="news-content">
+                        縦型シューティングゲームを公開しました。敵を撃ち落としてハイスコアを目指そう！
+                    </div>
+                </div>
+
+                <div class="news-item">
+                    <div class="news-date">2025-08-05</div>
+                    <div class="news-title">
+                        ダッシュボード開設
+                        <span class="announcement-badge">INFO</span>
+                    </div>
+                    <div class="news-content">
+                        ミニゲーム集のダッシュボードを開設しました。今後も新しいゲームを追加予定です。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <h2>📊 統計情報</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalGames">2</div>
+                    <div class="stat-label">総ゲーム数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="totalPlays">0</div>
+                    <div class="stat-label">総プレイ回数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="lastUpdated">2025年8月5日</div>
+                    <div class="stat-label">最終更新</div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2025 ミニゲーム集. HTMLとJavaScriptで作られています。</p>
+        </footer>
+    </div>
+
+    <script>
+        // 簡単な統計更新機能
+        function updateStats() {
+            const totalGames = document.querySelectorAll('.game-card').length;
+            document.getElementById('totalGames').textContent = totalGames;
+            
+            // ローカルストレージからプレイ回数を取得（将来的な機能）
+            const totalPlays = localStorage.getItem('totalPlays') || 0;
+            document.getElementById('totalPlays').textContent = totalPlays;
+        }
+
+        // ゲームカードにクリックイベントを追加
+        document.querySelectorAll('.game-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                // プレイ回数をカウント
+                let totalPlays = parseInt(localStorage.getItem('totalPlays') || 0);
+                totalPlays++;
+                localStorage.setItem('totalPlays', totalPlays);
+                
+                // アニメーション効果
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 100);
+            });
+        });
+
+        // 統計の初期化
+        updateStats();
+
+        // アニメーション効果
+        function animateCards() {
+            const cards = document.querySelectorAll('.game-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        }
+
+        // ページ読み込み時のアニメーション
+        window.addEventListener('load', () => {
+            animateCards();
+        });
+    </script>
+</body>
+</html>
